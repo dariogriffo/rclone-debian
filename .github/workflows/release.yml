@@ -1,0 +1,89 @@
+name: Build rclone for Debian
+
+on:
+  workflow_dispatch:
+    inputs:
+      rclone_version:
+        description: The version of rclone to build.
+        type: string
+        required: true
+      build_version:
+        description: The build version.
+        type: string
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-rclone:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout rclone-debian
+        uses: actions/checkout@v4
+
+      - name: Validate upstream license permits paid distribution
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: ./validate_license.sh ${{ inputs.rclone_version }}
+
+      - name: Build rclone
+        run: ./build.sh ${{ inputs.rclone_version }} ${{ inputs.build_version }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact
+          path: rclone_*.deb
+
+  build-src:
+    name: Build Source Packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout rclone-debian
+        uses: actions/checkout@v4
+
+      - name: Install dpkg-dev
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends dpkg-dev devscripts wget ca-certificates
+
+      - name: Build source packages
+        run: ./build_src.sh ${{ inputs.rclone_version }} ${{ inputs.build_version }}
+
+      - name: Upload Source Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-artifact
+          path: |
+            rclone_*.dsc
+            rclone_*.orig.tar.gz
+            rclone_*.debian.tar.xz
+
+  release-rclone:
+    name: Release rclone for Debian
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs: [build-rclone, build-src]
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: artifact
+
+      - name: Download Source Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: source-artifact
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          files: |
+            rclone_*.deb
+            rclone_*.dsc
+            rclone_*.orig.tar.gz
+            rclone_*.debian.tar.xz
+          name: ${{ inputs.rclone_version }}+${{ inputs.build_version }}
+          tag_name: ${{ inputs.rclone_version }}+${{ inputs.build_version }}
+          fail_on_unmatched_files: true

@@ -1,0 +1,49 @@
+#!/usr/bin/make -f
+DEB_HOST_ARCH ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
+RCLONE_VERSION := $(shell dpkg-parsechangelog -S Version | sed 's/[-~].*//')
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+
+override_dh_auto_build:
+	@arch="$(DEB_HOST_ARCH)"; \
+	case "$$arch" in \
+		amd64) RCLONE_RELEASE="rclone-v$(RCLONE_VERSION)-linux-amd64" ;; \
+		arm64) RCLONE_RELEASE="rclone-v$(RCLONE_VERSION)-linux-arm64" ;; \
+		armhf) RCLONE_RELEASE="rclone-v$(RCLONE_VERSION)-linux-arm-v7" ;; \
+		i386)  RCLONE_RELEASE="rclone-v$(RCLONE_VERSION)-linux-386" ;; \
+		*) echo "Unsupported architecture: $$arch"; exit 1 ;; \
+	esac; \
+	echo "Downloading $$RCLONE_RELEASE for $(RCLONE_VERSION)..."; \
+	wget -q "https://github.com/rclone/rclone/releases/download/v$(RCLONE_VERSION)/$$RCLONE_RELEASE.zip"; \
+	unzip -q -o "$$RCLONE_RELEASE.zip"; \
+	rm -f "$$RCLONE_RELEASE.zip"; \
+	chmod 755 "$$RCLONE_RELEASE/rclone"; \
+	"$$RCLONE_RELEASE/rclone" completion bash "$$RCLONE_RELEASE/rclone.bash"; \
+	"$$RCLONE_RELEASE/rclone" completion zsh "$$RCLONE_RELEASE/_rclone"; \
+	"$$RCLONE_RELEASE/rclone" completion fish "$$RCLONE_RELEASE/rclone.fish"; \
+	echo "$$RCLONE_RELEASE" > .rclone_release_name
+
+override_dh_auto_install:
+	@RCLONE_RELEASE=$$(cat .rclone_release_name); \
+	install -D -m 755 "$$RCLONE_RELEASE/rclone" debian/rclone/usr/bin/rclone; \
+	install -D -m 644 "$$RCLONE_RELEASE/rclone.1" debian/rclone/usr/share/man/man1/rclone.1; \
+	install -D -m 644 "$$RCLONE_RELEASE/rclone.bash" debian/rclone/usr/share/bash-completion/completions/rclone; \
+	install -D -m 644 "$$RCLONE_RELEASE/rclone.fish" debian/rclone/usr/share/fish/vendor_completions.d/rclone.fish; \
+	install -D -m 644 "$$RCLONE_RELEASE/_rclone" debian/rclone/usr/share/zsh/vendor-completions/_rclone
+
+override_dh_auto_test:
+
+override_dh_auto_clean:
+	@if [ -f .rclone_release_name ]; then \
+		RCLONE_RELEASE=$$(cat .rclone_release_name); \
+		rm -rf "$$RCLONE_RELEASE" .rclone_release_name || true; \
+	fi
+
+override_dh_strip:
+
+override_dh_dwz:
+
+override_dh_shlibdeps:

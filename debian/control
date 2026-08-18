@@ -1,0 +1,30 @@
+Source: rclone
+Section: net
+Priority: optional
+Maintainer: Dario Griffo <dariogriffo@gmail.com>
+Build-Depends: debhelper-compat (= 13), wget, ca-certificates, unzip
+Standards-Version: 4.6.2
+Homepage: https://rclone.org
+Rules-Requires-Root: no
+
+Package: rclone
+Architecture: amd64 arm64 armhf i386
+Depends: ${misc:Depends}
+Suggests: ca-certificates, fuse | fuse3
+Description: rsync for cloud storage
+ Rclone is a program to sync files and directories between the local
+ file system and a variety of cloud storage providers,
+ including (but not limited to):
+ .
+  - Google Drive
+  - Amazon S3 and S3-compatible providers
+  - Dropbox
+  - Google Cloud Storage
+  - Microsoft OneDrive and SharePoint
+  - Backblaze B2
+  - Openstack Swift
+  - SFTP, FTP, WebDAV, HTTP
+ .
+ It can also mount any remote as a filesystem, serve remotes over several
+ protocols, check and repair transfers with checksums, and copy or sync
+ directly between two remotes without staging data locally.

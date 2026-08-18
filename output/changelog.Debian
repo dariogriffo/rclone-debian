@@ -1,0 +1,9 @@
+rclone (FULL_VERSION) DIST; urgency=low
+
+  * New upstream release, packaged from the official upstream linux release
+    archive published at https://github.com/rclone/rclone/releases
+  * Contains the rclone binary, the rclone.1 manual page, the
+    /usr/sbin/mount.rclone helper symlink and bash, zsh and fish completions.
+  * The upstream changelog is published at https://rclone.org/changelog/
+
+ -- Dario Griffo <dariogriffo@gmail.com>  Sat, 01 Aug 2026 00:00:00 +0000

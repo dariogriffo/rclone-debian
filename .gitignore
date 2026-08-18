@@ -1,0 +1,21 @@
+# .deb Packages
+*.deb
+
+# Upstream release archives and their extracted contents
+*.zip
+rclone-v*-linux-*/
+.completion-gen/
+
+# Shell completions generated at build time from the rclone binary
+completions/
+
+# Source package artifacts
+*.dsc
+*.orig.tar.gz
+*.debian.tar.xz
+*.buildinfo
+*.changes
+rclone-[0-9]*/
+
+.idea/*
+.DS_Store
