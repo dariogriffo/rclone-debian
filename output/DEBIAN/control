@@ -6,7 +6,6 @@ Homepage: https://rclone.org
 Package: rclone
 Version: rclone_VERSION-BUILD_VERSION~griffo
 Architecture: SUPPORTED_ARCHITECTURES
-Depends: 
 Suggests: ca-certificates, fuse | fuse3
 Description: rsync for cloud storage
  Rclone is a program to sync files and directories between the local
